@@ -1,23 +1,23 @@
 # Palavras para colocar no compilador.l
 
- - [ ] label
+ - [X] label
  - [X] program
- - [ ] type
- - [ ] array
+ - [X] type
+ - [X] array
  - [X] var
- - [ ] procedure
- - [ ] function
+ - [X] procedure
+ - [X] function
  - [X] begin
  - [X] end
- - [ ] goto
- - [ ] if
- - [ ] then
- - [ ] else
- - [ ] while
- - [ ] do
- - [ ] or
- - [ ] *
- - [ ] div
- - [ ] and
- - [ ] not
- - [ ] of
+ - [X] goto
+ - [X] if
+ - [X] then
+ - [X] else
+ - [X] while
+ - [X] do
+ - [X] or
+ - [X] *
+ - [X] div
+ - [X] and
+ - [X] not
+ - [X] of

@@ -1,0 +1,180 @@
+Terminals unused in grammar
+
+    OR
+    ABRE_PARENTESES
+    FECHA_PARENTESES
+
+
+Grammar
+
+    0 $accept: expr $end
+
+    1 expr: expr MAIS termo
+    2     | expr MENOS termo
+    3     | termo
+
+    4 termo: termo ASTERISCO fator
+    5      | termo DIV fator
+    6      | fator
+
+    7 fator: IDENT
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    error (256)
+    IDENT (258) 7
+    MAIS (259) 1
+    MENOS (260) 2
+    OR (261)
+    ASTERISCO (262) 4
+    DIV (263) 5
+    ABRE_PARENTESES (264)
+    FECHA_PARENTESES (265)
+
+
+Nonterminals, with rules where they appear
+
+    $accept (11)
+        on left: 0
+    expr (12)
+        on left: 1 2 3
+        on right: 0 1 2
+    termo (13)
+        on left: 4 5 6
+        on right: 1 2 3 4 5
+    fator (14)
+        on left: 7
+        on right: 4 5 6
+
+
+State 0
+
+    0 $accept: • expr $end
+
+    IDENT  shift, and go to state 1
+
+    expr   go to state 2
+    termo  go to state 3
+    fator  go to state 4
+
+
+State 1
+
+    7 fator: IDENT •
+
+    $default  reduce using rule 7 (fator)
+
+
+State 2
+
+    0 $accept: expr • $end
+    1 expr: expr • MAIS termo
+    2     | expr • MENOS termo
+
+    $end   shift, and go to state 5
+    MAIS   shift, and go to state 6
+    MENOS  shift, and go to state 7
+
+
+State 3
+
+    3 expr: termo •
+    4 termo: termo • ASTERISCO fator
+    5      | termo • DIV fator
+
+    ASTERISCO  shift, and go to state 8
+    DIV        shift, and go to state 9
+
+    $default  reduce using rule 3 (expr)
+
+
+State 4
+
+    6 termo: fator •
+
+    $default  reduce using rule 6 (termo)
+
+
+State 5
+
+    0 $accept: expr $end •
+
+    $default  accept
+
+
+State 6
+
+    1 expr: expr MAIS • termo
+
+    IDENT  shift, and go to state 1
+
+    termo  go to state 10
+    fator  go to state 4
+
+
+State 7
+
+    2 expr: expr MENOS • termo
+
+    IDENT  shift, and go to state 1
+
+    termo  go to state 11
+    fator  go to state 4
+
+
+State 8
+
+    4 termo: termo ASTERISCO • fator
+
+    IDENT  shift, and go to state 1
+
+    fator  go to state 12
+
+
+State 9
+
+    5 termo: termo DIV • fator
+
+    IDENT  shift, and go to state 1
+
+    fator  go to state 13
+
+
+State 10
+
+    1 expr: expr MAIS termo •
+    4 termo: termo • ASTERISCO fator
+    5      | termo • DIV fator
+
+    ASTERISCO  shift, and go to state 8
+    DIV        shift, and go to state 9
+
+    $default  reduce using rule 1 (expr)
+
+
+State 11
+
+    2 expr: expr MENOS termo •
+    4 termo: termo • ASTERISCO fator
+    5      | termo • DIV fator
+
+    ASTERISCO  shift, and go to state 8
+    DIV        shift, and go to state 9
+
+    $default  reduce using rule 2 (expr)
+
+
+State 12
+
+    4 termo: termo ASTERISCO fator •
+
+    $default  reduce using rule 4 (termo)
+
+
+State 13
+
+    5 termo: termo DIV fator •
+
+    $default  reduce using rule 5 (termo)

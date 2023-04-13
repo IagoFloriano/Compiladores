@@ -3,9 +3,13 @@
 #include <stdio.h>
 %}
 
-%token IDENT MAIS MENOS OR ASTERISCO DIV ABRE_PARENTESES FECHA_PARENTESES
+%token IDENT BIDENT MAIS MENOS AND OR ASTERISCO DIV ABRE_PARENTESES FECHA_PARENTESES
 
 %%
+
+start      : expr |
+             bexpr |
+;
 
 expr       : expr MAIS termo {printf ("+"); } |
              expr MENOS termo {printf ("-"); } | 
@@ -18,6 +22,14 @@ termo      : termo ASTERISCO fator  {printf ("*"); }|
 ;
 
 fator      : IDENT {printf ("A"); }
+;
+
+bexpr       : bexpr AND btermo {printf (" AND "); } |
+              bexpr OR btermo {printf (" OR "); } | 
+              btermo
+;
+
+btermo      : BIDENT {printf ("B"); }
 ;
 
 %%

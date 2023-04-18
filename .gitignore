@@ -1,0 +1,8 @@
+*.o
+*.output
+teste1
+.vscode/
+lex.yy.c
+*.output
+*.tab.*
+executaMepa

@@ -4,7 +4,7 @@
 - [X] Aula 2 (Simbolos no .l)
 - [X] Aula 3 (Opcional posfixo)
 - [X] Aula 4 (INPP e PARA)
-- [ ] Aula 5
+- [ ] Aula 5 (Tabela de símbolos e alocação de variáveis)
 - [ ] Aula 6
 - [ ] Aula 7
 - [ ] Aula 8

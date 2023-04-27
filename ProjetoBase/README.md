@@ -1,23 +1,26 @@
-# Palavras para colocar no compilador.l
+# PROGRESSO
 
- - [X] label
- - [X] program
- - [X] type
- - [X] array
- - [X] var
- - [X] procedure
- - [X] function
- - [X] begin
- - [X] end
- - [X] goto
- - [X] if
- - [X] then
- - [X] else
- - [X] while
- - [X] do
- - [X] or
- - [X] *
- - [X] div
- - [X] and
- - [X] not
- - [X] of
+- [X] Aula 1 (Apresentação)
+- [X] Aula 2 (Simbolos no .l)
+- [X] Aula 3 (Opcional posfixo)
+- [ ] Aula 4 (INPP e PARA)
+- [ ] Aula 5
+- [ ] Aula 6
+- [ ] Aula 7
+- [ ] Aula 8
+- [ ] Aula 9
+- [ ] Aula 10
+- [ ] Aula 11
+- [ ] Aula 12
+- [ ] Aula 13
+- [ ] Aula 14
+- [ ] Aula 15
+- [ ] Aula 16
+- [ ] Aula 17
+- [ ] Aula 18
+- [ ] Aula 19
+- [ ] Aula 20
+- [ ] Aula 21
+- [ ] Aula 22
+- [ ] Aula 23
+- [ ] Aula 24

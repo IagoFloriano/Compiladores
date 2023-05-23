@@ -59,6 +59,6 @@ typedef struct simbolo {
   t_conteudo conteudo;
 } simbolo;
 
-simbolo criaSimbolo();
+simbolo criaSimbolo(char *ident, int tipo_simbolo, int nivel, t_conteudo cont);
 
 #endif // __SIMBOLO__

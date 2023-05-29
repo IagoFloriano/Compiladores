@@ -6,7 +6,7 @@
 typedef struct tabela {
   int tam;
   int topo;
-  struct *simbolo;
+  simbolo *pilha;
 } tabela;
 
 void inicializa(tabela *t);

@@ -11,7 +11,7 @@ all : $(EXE)
 debug: CFLAGS += $(DEBUG_FLAGS)
 debug: all
 
-$(EXE): simbolo.o $(EXE).o
+$(EXE): simbolo.o tabelaSimbolo.o $(EXE).o
 	gcc -o $@ $^ $(CFLAGS)
 
 %.o: %.c

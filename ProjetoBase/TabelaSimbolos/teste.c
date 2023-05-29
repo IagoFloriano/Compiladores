@@ -1,4 +1,5 @@
 #include "simbolo.h"
+#include "tabelaSimbolo.h"
 #include <stdio.h>
 
 void printSimbolo(simbolo s){
@@ -31,6 +32,9 @@ int main(){
   c.var.tipo = integer_pas;
   c.par.tipo_passagem = valor_par;
   simbolo s = criaSimbolo("teste", parametro, 0, c);
+  tabela t;
+  inicializa(&t);
+  push(&t, s);
 
   printSimbolo(s);
   return 0;

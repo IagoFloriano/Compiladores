@@ -73,8 +73,16 @@ int main(){
   printTabela(t);
   printf("}\n\n");
 
-  printf("push(&t, s2){\n");
+  printf("push(&t, s2{foi modificado o deslocamento}){\n");
+  s2.conteudo.var.deslocamento = 2;
   push(&t, s2);
+  printTabela(t);
+  printf("}\n\n");
+
+  printf("busca(&t, \"teste\"){\n");
+  simbolo *sp = busca(&t, "teste");
+  printSimbolo(*sp, 1);
+  printf("\n");
   printTabela(t);
   printf("}\n\n");
 

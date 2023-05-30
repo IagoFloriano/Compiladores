@@ -6,5 +6,5 @@
 - - [X] push
 - - [X] pop
 - - [X] remove
-- - [ ] busca
+- - [X] busca
 - - [ ] atribui tipo

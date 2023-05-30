@@ -28,7 +28,15 @@ void removeN(tabela *t, int n){
 }
 
 simbolo *busca(tabela *t, char *ident){
-  return NULL;
+  if (!t) return NULL;
+  simbolo *s = NULL;
+  for (int i = t->topo; i >= 0; i--){
+    if (!strcmp(ident, t->pilha[i].identificador)){
+      s = &(t->pilha[i]);
+      break;
+    }
+  }
+  return s;
 }
 
 void atribuiTipo(tabela *t, int tipo, int num){

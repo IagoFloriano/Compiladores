@@ -2,9 +2,9 @@
 
 - [X] Implementar simbolos
 - [ ] Implementar uma pilha com esses simbolos
-- - [ ] inicializa
-- - [ ] push
-- - [ ] pop
+- - [X] inicializa
+- - [X] push
+- - [X] pop
 - - [ ] remove
 - - [ ] busca
 - - [ ] atribui tipo

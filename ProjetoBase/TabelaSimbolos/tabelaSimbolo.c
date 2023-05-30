@@ -40,4 +40,8 @@ simbolo *busca(tabela *t, char *ident){
 }
 
 void atribuiTipo(tabela *t, int tipo, int num){
+  for (int i = t->topo; i > t->topo - num; i--){
+    t->pilha[i].conteudo.var.tipo = tipo;
+    // funciona por conteudo ser union
+  }
 }

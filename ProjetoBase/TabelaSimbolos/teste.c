@@ -86,6 +86,11 @@ int main(){
   printTabela(t);
   printf("}\n\n");
 
+  printf("atribuiTipo(&t, boolean_pas, 2){\n");
+  atribuiTipo(&t, boolean_pas, 2);
+  printTabela(t);
+  printf("}\n\n");
+
   printf("removeN(&t, 2){\n");
   removeN(&t, 2);
   printTabela(t);

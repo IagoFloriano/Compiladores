@@ -7,3 +7,4 @@ lex.yy.c
 *.tab.*
 executaMepa
 ProjetoBase/compilador
+*/*/teste

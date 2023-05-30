@@ -19,13 +19,12 @@ void push(tabela *t, simbolo s){
 }
 
 simbolo pop(tabela *t){
-  //if (!t || t->topo < 0) return;
-
   simbolo s = t->pilha[t->topo--];
   return s;
 }
 
 void removeN(tabela *t, int n){
+  t->topo -= n;
 }
 
 simbolo *busca(tabela *t, char *ident){

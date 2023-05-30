@@ -5,6 +5,6 @@
 - - [X] inicializa
 - - [X] push
 - - [X] pop
-- - [ ] remove
+- - [X] remove
 - - [ ] busca
 - - [ ] atribui tipo

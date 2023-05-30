@@ -41,36 +41,47 @@ int main(){
 
   printf("criaSimbolo(\"teste\", parametro, 0, c){\n");
   simbolo s = criaSimbolo("teste", parametro, 0, c);
-  printf("}\n");
+  printSimbolo(s, 1);
+  printf("}\n\n");
 
   tabela t;
   printf("inicializa(&t){\n");
   inicializa(&t);
-  printf("}\n");
-
-  printf("push(&t, s){\n");
-  push(&t, s);
-  printf("}\n");
-
-  printf("push(&t, s){\n");
-  push(&t, s);
-  printf("}\n");
-
-  printf("printTabela(t){\n");
   printTabela(t);
-  printf("}\n");
+  printf("}\n\n");
+
+  printf("push(&t, s){\n");
+  push(&t, s);
+  printTabela(t);
+  printf("}\n\n");
+
+  printf("push(&t, s){\n");
+  push(&t, s);
+  printTabela(t);
+  printf("}\n\n");
+
+  printf("push(&t, s){\n");
+  push(&t, s);
+  printTabela(t);
+  printf("}\n\n");
 
   simbolo s2;
   printf("s2 = pop(&t){\n");
   s2 = pop(&t);
-  printf("}\n");
-
-  printf("printTabela(t){\n");
+  printSimbolo(s2, 1);
+  printf("\n");
   printTabela(t);
-  printf("}\n");
+  printf("}\n\n");
 
-  printf("printTabela(t){\n");
-  printSimbolo(s2,1);
-  printf("}\n");
+  printf("push(&t, s2){\n");
+  push(&t, s2);
+  printTabela(t);
+  printf("}\n\n");
+
+  printf("removeN(&t, 2){\n");
+  removeN(&t, 2);
+  printTabela(t);
+  printf("}\n\n");
+
   return 0;
 }

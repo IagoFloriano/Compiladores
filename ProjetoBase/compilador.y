@@ -23,6 +23,7 @@ int num_vars;
 
 %%
 
+// REGRA 01
 programa    :{
              geraCodigo (NULL, "INPP");
              }
@@ -33,6 +34,7 @@ programa    :{
              }
 ;
 
+// REGRA 02
 bloco       :
               parte_declara_vars
               {
@@ -44,6 +46,7 @@ bloco       :
 
 
 
+// REGRA 08
 parte_declara_vars:  var
 ;
 
@@ -52,6 +55,7 @@ var         : { } VAR declara_vars
             |
 ;
 
+// REGRA 09
 declara_vars: declara_vars declara_var
             | declara_var
 ;
@@ -72,11 +76,13 @@ lista_id_var: lista_id_var VIRGULA IDENT
             | IDENT { /* insere vars na tabela de s�mbolos */}
 ;
 
+// REGRA 10
 lista_idents: lista_idents VIRGULA IDENT
             | IDENT
 ;
 
 
+// REGRA 16
 comando_composto: T_BEGIN comandos T_END
 
 comandos:

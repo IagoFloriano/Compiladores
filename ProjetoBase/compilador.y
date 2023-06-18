@@ -16,10 +16,11 @@ int num_vars;
 
 %token PROGRAM ABRE_PARENTESES FECHA_PARENTESES
 %token VIRGULA PONTO_E_VIRGULA DOIS_PONTOS PONTO
-%token T_BEGIN T_END VAR IDENT ATRIBUICAO
+%token T_BEGIN T_END VAR NUMERO IDENT ATRIBUICAO
 %token LABEL TYPE ARRAY PROCEDURE FUNCTION
 %token GOTO IF THEN ELSE WHILE DO
 %token OR DIV AND NOT OF VEZES
+%token MAIOR MAIOR_IGUAL MENOR MENOR_IGUAL DIFERENTE IGUAL
 
 %%
 
@@ -42,9 +43,6 @@ bloco       :
 
               comando_composto
               ;
-
-
-
 
 // REGRA 08
 parte_declara_vars:  var
@@ -72,8 +70,8 @@ tipo        : IDENT
 ;
 
 lista_id_var: lista_id_var VIRGULA IDENT
-              { /* insere �ltima vars na tabela de s�mbolos */ }
-            | IDENT { /* insere vars na tabela de s�mbolos */}
+              { /* insere ultima vars na tabela de simbolos */ }
+            | IDENT { /* insere vars na tabela de simbolos */}
 ;
 
 // REGRA 10
@@ -81,13 +79,85 @@ lista_idents: lista_idents VIRGULA IDENT
             | IDENT
 ;
 
-
 // REGRA 16
 comando_composto: T_BEGIN comandos T_END
 
-comandos:
+comandos: comandos PONTO_E_VIRGULA comando
+        | comando
 ;
 
+// REGRA 17
+comando: NUMERO DOIS_PONTOS comando_sem_rotulo
+       | comando_sem_rotulo
+;
+
+// REGRA 18
+comando_sem_rotulo:
+
+;
+
+// REGRA 24
+lista_de_expressoes: lista_de_expressoes VIRGULA {/* num_params++ */} expressao
+                   | expressao
+;
+
+// REGRA 25
+expressao: expressao_simples
+         | expressao_simples relacao expressao_simples
+            {
+               /* testa se é possível comparar as duas expressoes */
+            }
+;
+
+// REGRA 26
+relacao: IGUAL
+         { }
+       | DIFERENTE
+         { }  
+       | MENOR
+         { }
+       | MENOR_IGUAL
+         { }
+       | MAIOR
+         { }
+       | MAIOR_IGUAL
+         { }
+;
+
+// REGRA 27
+expressao_simples:
+;
+
+// REGRA 28
+termo: fator vezes_div_or fator
+         {
+
+         }
+     | fator
+;
+
+vezes_div_or: VEZES {}
+            | DIV {}
+            | OR {}
+;
+
+// REGRA 29
+/* ta errado essa */
+fator: variavel
+     | NUMERO
+     | chamada_func
+     | ABRE_PARENTESES expressao FECHA_PARENTESES
+     | NOT fator
+;
+
+// REGRA 30
+variavel: IDENT
+        | IDENT lista_de_expressoes
+;
+
+// REGRA 31
+chamada_func:
+;
 
 %%
 

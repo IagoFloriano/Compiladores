@@ -9,8 +9,8 @@
 
 $DEPURA=1
 
-compilador: lex.yy.c compilador.tab.c compilador.o compilador.h
-	gcc lex.yy.c compilador.tab.c compilador.o -o compilador -lfl -ly -lc
+compilador: lex.yy.c compilador.tab.c compilador.o compilador.h simbolo.o tabelaSimbolo.o
+	gcc lex.yy.c compilador.tab.c compilador.o simbolo.o tabelaSimbolo.o -o compilador -lfl -L /usr/lib/x86_64-linux-gnu -ly -lc
 
 lex.yy.c: compilador.l compilador.h
 	flex compilador.l

@@ -1,5 +1,5 @@
 DEBUG_FLAGS = -g -DDEBUG
-CFLAGS = -Wall -std=gnu99 -lm
+CFLAGS = -Wall -lm
 EXE = teste
 
 #------------------------------------------------------------------------------
@@ -13,6 +13,8 @@ debug: all
 
 $(EXE): simbolo.o tabelaSimbolo.o $(EXE).o
 	gcc -o $@ $^ $(CFLAGS)
+	cp tabelaSimbolo.o ../
+	cp simbolo.o ../
 
 %.o: %.c
 	gcc $(CFLAGS) -c $^

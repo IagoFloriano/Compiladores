@@ -9,9 +9,55 @@
 #include <stdlib.h>
 #include <string.h>
 #include "compilador.h"
+#include "TabelaSimbolos/simbolo.h"
+#include "TabelaSimbolos/tabelaSimbolo.h"
 
+
+char mepaTemp[256];
 int num_vars;
+int qtTipoAtual;
+int tipoAtual;
+int nivelLexico;
+simb simboloTemp;
+t_conteudo conteudoTemp;
+tabela t;
 
+int strToType(const char *str){
+  if (!strcmp(str, "integer")) return integer_pas;
+  if (!strcmp(str, "boolean")) return boolean_pas;
+  return indefinido_pas;
+}
+
+void printSimbolo(simb s, int tablevel){
+  for(int i = 0; i < tablevel; i++){printf("\t");}
+  char *tipos[] = {"PROC", "VAR", "PARAM"};
+  //    ident  tipo  infos
+  printf("%s\t%s\t",s.identificador,
+      tipos[s.tipo_simbolo]);
+
+  char *tiposVar[] = {"erro","int","bool"};
+  switch(s.tipo_simbolo){
+    case variavel:
+      printf("%2d, %2d, %s\n",
+          s.nivel_lexico, s.conteudo.var.deslocamento, tiposVar[s.conteudo.var.tipo]);
+      break;
+    case procedimento:
+      break;
+    case parametro:
+      printf("%2d, %2d, %s, %s\n",
+          s.nivel_lexico, s.conteudo.par.deslocamento, tiposVar[s.conteudo.par.tipo],
+          s.conteudo.par.tipo_passagem ? "vlr" : "ref");
+      break;
+    default:
+      printf("ERRO\n");
+  }
+}
+
+void printTabela(tabela t){
+  for(int i = t.topo; i >= 0; i--){
+    printSimbolo(t.pilha[i], 1);
+  }
+}
 %}
 
 %token PROGRAM ABRE_PARENTESES FECHA_PARENTESES
@@ -22,11 +68,21 @@ int num_vars;
 %token OR DIV AND NOT OF VEZES
 %token MAIOR MAIOR_IGUAL MENOR MENOR_IGUAL DIFERENTE IGUAL
 
+// %union{
+//    char *str;  // define o tipo str
+//    int int_val; // define o tipo int_val
+//    simb *simbPtr;
+// }
+
+// %type <int_val> tipo;
+
 %%
 
 // REGRA 01
 programa    :{
              geraCodigo (NULL, "INPP");
+             inicializa(&t);
+             nivelLexico = 0;
              }
              PROGRAM IDENT
              ABRE_PARENTESES lista_idents FECHA_PARENTESES PONTO_E_VIRGULA
@@ -45,12 +101,13 @@ bloco       :
               ;
 
 // REGRA 08
-parte_declara_vars:  var
-;
-
-
-var         : { } VAR declara_vars
-            |
+parte_declara_vars: {
+                  num_vars = 0;
+                  } VAR declara_vars {
+                    sprintf(mepaTemp, "AMEM %d", num_vars);
+                    geraCodigo(NULL, mepaTemp);
+                  }
+                  | {printf("sem vars");}
 ;
 
 // REGRA 09
@@ -58,25 +115,38 @@ declara_vars: declara_vars declara_var
             | declara_var
 ;
 
-declara_var : { }
+declara_var : {}
               lista_id_var DOIS_PONTOS
               tipo
-              { /* AMEM */
+              {
               }
               PONTO_E_VIRGULA
 ;
 
-tipo        : IDENT
+tipo        : IDENT {
+            atribuiTipo(&t, strToType(token), qtTipoAtual);
+            printTabela(t);
+            qtTipoAtual = 0;
+            }
 ;
 
-lista_id_var: lista_id_var VIRGULA IDENT
-              { /* insere ultima vars na tabela de simbolos */ }
-            | IDENT { /* insere vars na tabela de simbolos */}
-;
 
 // REGRA 10
 lista_idents: lista_idents VIRGULA IDENT
             | IDENT
+;
+
+lista_id_var: lista_id_var VIRGULA var
+            | var
+;
+
+var: IDENT  {
+   conteudoTemp.var.deslocamento = num_vars;
+   simboloTemp = criaSimbolo(token, variavel, nivelLexico, conteudoTemp);
+   push(&t, simboloTemp);
+   qtTipoAtual++;
+   num_vars++;
+   }
 ;
 
 // REGRA 16

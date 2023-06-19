@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include "simbolo.h"
 
-simbolo criaSimbolo(char *ident, int tipo_simbolo, int nivel, t_conteudo cont){
-  simbolo s;
+simb criaSimbolo(char *ident, int tipo_simbolo, int nivel, t_conteudo cont){
+  simb s;
   s.identificador = malloc(strlen(ident) + 1);
   strcpy(s.identificador, ident);
 

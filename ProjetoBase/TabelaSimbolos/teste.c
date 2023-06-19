@@ -2,7 +2,7 @@
 #include "tabelaSimbolo.h"
 #include <stdio.h>
 
-void printSimbolo(simbolo s, int tablevel){
+void printSimbolo(simb s, int tablevel){
   for(int i = 0; i < tablevel; i++){printf("\t");}
   char *tipos[] = {"PROC", "VAR", "PARAM"};
   //    ident  tipo  infos
@@ -40,7 +40,7 @@ int main(){
   c.par.tipo_passagem = valor_par;
 
   printf("criaSimbolo(\"teste\", parametro, 0, c){\n");
-  simbolo s = criaSimbolo("teste", parametro, 0, c);
+  simb s = criaSimbolo("teste", parametro, 0, c);
   printSimbolo(s, 1);
   printf("}\n\n");
 
@@ -65,7 +65,7 @@ int main(){
   printTabela(t);
   printf("}\n\n");
 
-  simbolo s2;
+  simb s2;
   printf("s2 = pop(&t){\n");
   s2 = pop(&t);
   printSimbolo(s2, 1);
@@ -80,7 +80,7 @@ int main(){
   printf("}\n\n");
 
   printf("busca(&t, \"teste\"){\n");
-  simbolo *sp = busca(&t, "teste");
+  simb *sp = busca(&t, "teste");
   printSimbolo(*sp, 1);
   printf("\n");
   printTabela(t);

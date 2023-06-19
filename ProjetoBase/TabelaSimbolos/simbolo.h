@@ -52,13 +52,13 @@ typedef union t_conteudo {
   struct procedimento proc;
 } t_conteudo;
 
-typedef struct simbolo {
+typedef struct simb {
   char *identificador;
   int tipo_simbolo;
   int nivel_lexico;
   t_conteudo conteudo;
-} simbolo;
+} simb;
 
-simbolo criaSimbolo(char *ident, int tipo_simbolo, int nivel, t_conteudo cont);
+simb criaSimbolo(char *ident, int tipo_simbolo, int nivel, t_conteudo cont);
 
 #endif // __SIMBOLO__

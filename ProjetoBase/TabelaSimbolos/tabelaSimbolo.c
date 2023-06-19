@@ -6,20 +6,20 @@
 void inicializa(tabela *t){
   t->tam = 1;
   t->topo = -1;
-  t->pilha = malloc(sizeof(simbolo) * 1);
+  t->pilha = malloc(sizeof(simb) * 1);
 }
 
-void push(tabela *t, simbolo s){
+void push(tabela *t, simb s){
   if (!t) return;
   if (t->topo + 2 >= t->tam){
-    t->pilha = realloc(t->pilha, sizeof(simbolo) * (t->tam << 1));
+    t->pilha = realloc(t->pilha, sizeof(simb) * (t->tam << 1));
     t->tam = t-> tam << 1;
   }
   t->pilha[++(t->topo)] = s;
 }
 
-simbolo pop(tabela *t){
-  simbolo s = t->pilha[t->topo--];
+simb pop(tabela *t){
+  simb s = t->pilha[t->topo--];
   return s;
 }
 
@@ -27,9 +27,9 @@ void removeN(tabela *t, int n){
   t->topo -= n;
 }
 
-simbolo *busca(tabela *t, char *ident){
+simb *busca(tabela *t, char *ident){
   if (!t) return NULL;
-  simbolo *s = NULL;
+  simb *s = NULL;
   for (int i = t->topo; i >= 0; i--){
     if (!strcmp(ident, t->pilha[i].identificador)){
       s = &(t->pilha[i]);

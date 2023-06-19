@@ -6,18 +6,18 @@
 typedef struct tabela {
   int tam;
   int topo;
-  simbolo *pilha;
+  simb *pilha;
 } tabela;
 
 void inicializa(tabela *t);
 
-void push(tabela *t, simbolo s);
+void push(tabela *t, simb s);
 
-simbolo pop(tabela *t);
+simb pop(tabela *t);
 
 void removeN(tabela *t, int n);
 
-simbolo *busca(tabela *t, char *ident);
+simb *busca(tabela *t, char *ident);
 
 void atribuiTipo(tabela *t, int tipo, int num);
 

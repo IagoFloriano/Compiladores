@@ -90,6 +90,9 @@ void printTabela(tabela t){
 %type <int_val> fator;
 %type <int_val> termo;
 
+%nonassoc "lower_than_else"
+%nonassoc ELSE
+
 %%
 
 // REGRA 01
@@ -179,7 +182,8 @@ comando: NUMERO DOIS_PONTOS comando_sem_rotulo
 // REGRA 18
 comando_sem_rotulo: atribuicao
                   | comando_repetitivo
-
+                  | comando_condicional
+                  | comando_composto
 ;
 
 // REGRA 19
@@ -202,6 +206,37 @@ atribuicao: IDENT {
             simbAtribuicao.nivel_lexico, simbAtribuicao.conteudo.var.deslocamento);
             geraCodigo(NULL, mepaTemp);
           }
+;
+
+// REGRA 22
+comando_condicional:
+                  IF expressao {
+                  // desvia falso pra else
+                  sprintf(mepaTemp, "DSVF R%02d", proxRotulo);
+                  geraCodigo(NULL, mepaTemp);
+                  // empilha rotulo
+                  pilha_push(&rotulos, proxRotulo);
+                  }
+                  THEN comando_sem_rotulo {
+                  // desvia sempre fim else
+                  sprintf(mepaTemp, "DSVS R%02d", pilha_topo(&rotulos)+1);
+                  geraCodigo(NULL, mepaTemp);
+
+                  // rotulo else
+                  sprintf(rotrTemp, "R%02d", pilha_topo(&rotulos));
+                  geraCodigo(rotrTemp, "NADA");
+                  }
+                  talvez_else {
+                  // rotulo fim else
+                  sprintf(rotrTemp, "R%02d", pilha_topo(&rotulos)+1);
+                  geraCodigo(rotrTemp, "NADA");
+
+                  pilha_pop(&rotulos);
+                  }
+;
+
+talvez_else: ELSE comando_sem_rotulo
+           | %prec "lower_than_else"
 ;
 
 // REGRA 23

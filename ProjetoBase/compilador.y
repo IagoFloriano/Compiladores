@@ -11,9 +11,11 @@
 #include "compilador.h"
 #include "TabelaSimbolos/simbolo.h"
 #include "TabelaSimbolos/tabelaSimbolo.h"
+#include "Pilha/pilha.h"
 
 
 char mepaTemp[256];
+char rotrTemp[256];
 int num_vars;
 int qtTipoAtual;
 int tipoAtual;
@@ -23,6 +25,8 @@ simb *simboloPtr;
 simb simbAtribuicao;
 t_conteudo conteudoTemp;
 tabela t;
+pilha rotulos;
+int proxRotulo;
 
 int strToType(const char *str){
   if (!strcmp(str, "integer")) return integer_pas;
@@ -92,6 +96,8 @@ void printTabela(tabela t){
 programa    :{
              geraCodigo (NULL, "INPP");
              inicializa(&t);
+             pilha_init(&rotulos);
+             proxRotulo = 0;
              nivelLexico = 0;
              }
              PROGRAM IDENT
@@ -172,7 +178,7 @@ comando: NUMERO DOIS_PONTOS comando_sem_rotulo
 
 // REGRA 18
 comando_sem_rotulo: atribuicao
-                  |
+                  | comando_repetitivo
 
 ;
 
@@ -196,6 +202,30 @@ atribuicao: IDENT {
             simbAtribuicao.nivel_lexico, simbAtribuicao.conteudo.var.deslocamento);
             geraCodigo(NULL, mepaTemp);
           }
+;
+
+// REGRA 23
+comando_repetitivo: WHILE {
+                      pilha_push(&rotulos, proxRotulo);
+                      sprintf(rotrTemp, "R%02d", proxRotulo);
+                      geraCodigo(rotrTemp, "NADA");
+
+                      proxRotulo += 2;
+                    }
+                    expressao
+                    DO {
+                      sprintf(mepaTemp, "DSVF R%02d", pilha_topo(&rotulos)+1);
+                      geraCodigo(NULL, mepaTemp);
+                    } comando_sem_rotulo {
+                      
+                      sprintf(mepaTemp, "DSVS R%02d", pilha_topo(&rotulos));
+                      geraCodigo(NULL, mepaTemp);
+                      
+                      sprintf(rotrTemp, "R%02d", pilha_topo(&rotulos)+1);
+                      geraCodigo(rotrTemp, "NADA");
+
+                      pilha_pop(&rotulos);
+                    }
 ;
 
 // REGRA 24

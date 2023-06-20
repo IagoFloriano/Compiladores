@@ -2,8 +2,12 @@ program exemplo75 (input, output);
 var m,n :  integer;
     j,k :  boolean;
 begin    
-    n := 10;
-    m := (3 + 2) * 1;
-    m := n * 2 div m;
+    m := 11;
+    while m > 10 do
+      m := 5;
+    m := 12;
+    while m < 20 do
+      m := 21;
+    n := m
 end.
 

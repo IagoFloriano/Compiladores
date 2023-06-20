@@ -215,6 +215,30 @@ of { simbolo = simb_of;
           return FECHA_PARENTESES;
  }
 
+\[  { simbolo = simb_abre_colchetes;
+          strncpy (token, yytext, TAM_TOKEN);
+          IMPRIME(" abre_colchetes  ");
+          return ABRE_COLCHETES;
+    }
+
+\]  { simbolo = simb_fecha_colchetes;
+          strncpy (token, yytext, TAM_TOKEN);
+          IMPRIME(" fecha_colchetes ");
+          return FECHA_COLCHETES;
+ }
+
+\{  { simbolo = simb_abre_chaves;
+          strncpy (token, yytext, TAM_TOKEN);
+          IMPRIME(" abre_chaves  ");
+          return ABRE_CHAVES;
+    }
+
+\}  { simbolo = simb_fecha_chaves;
+          strncpy (token, yytext, TAM_TOKEN);
+          IMPRIME(" fecha_chaves ");
+          return FECHA_CHAVES;
+ }
+
 \=  { simbolo = simb_igual;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" igual ");
@@ -249,6 +273,18 @@ of { simbolo = simb_of;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" menor ou igual ");
           return MENOR_IGUAL;
+ }
+
+\+ { simbolo = simb_mais;
+          strncpy (token, yytext, TAM_TOKEN);
+          IMPRIME(" mais ");
+          return MAIS;
+ }
+
+\-  { simbolo = simb_menos;
+          strncpy (token, yytext, TAM_TOKEN);
+          IMPRIME(" menos ");
+          return MENOS;
  }
 
 {ident} { simbolo = simb_identificador;

@@ -26,6 +26,7 @@ simb simbAtribuicao;
 t_conteudo conteudoTemp;
 tabela t;
 pilha rotulos;
+pilha num_vars_p;
 int proxRotulo;
 
 int strToType(const char *str){
@@ -48,6 +49,8 @@ void printSimbolo(simb s, int tablevel){
           s.nivel_lexico, s.conteudo.var.deslocamento, tiposVar[s.conteudo.var.tipo]);
       break;
     case procedimento:
+      printf("%2d, %2d, %s\n",
+          s.nivel_lexico, s.conteudo.var.deslocamento, tiposVar[s.conteudo.var.tipo]);
       break;
     case parametro:
       printf("%2d, %2d, %s, %s\n",
@@ -97,26 +100,39 @@ void printTabela(tabela t){
 
 // REGRA 01
 programa    :{
-             geraCodigo (NULL, "INPP");
+             geraCodigo(NULL, "INPP");
              inicializa(&t);
              pilha_init(&rotulos);
+             pilha_init(&num_vars_p);
              proxRotulo = 0;
              nivelLexico = 0;
              }
              PROGRAM IDENT
              ABRE_PARENTESES lista_idents FECHA_PARENTESES PONTO_E_VIRGULA
              bloco PONTO {
-             geraCodigo (NULL, "PARA");
+             pilha_pop(&num_vars_p);
+             geraCodigo(NULL, "PARA");
              }
 ;
 
 // REGRA 02
 bloco       :
-              parte_declara_vars
-              {
+              parte_declara_vars {
+                sprintf(mepaTemp, "DSVS R%02d", proxRotulo);
+                geraCodigo(NULL, mepaTemp);
+                pilha_push(&rotulos, proxRotulo);
+                proxRotulo++;
+              }
+              parte_declara_subrotinas {
+                sprintf(rotrTemp, "R%02d", pilha_topo(&rotulos));
+                geraCodigo(rotrTemp, "NADA");
+                pilha_pop(&rotulos);
               }
 
-              comando_composto
+              comando_composto{
+                sprintf(mepaTemp, "DMEM %d", pilha_topo(&num_vars_p));
+                geraCodigo(NULL, mepaTemp);
+              }
               ;
 
 // REGRA 08
@@ -125,8 +141,9 @@ parte_declara_vars: {
                   } VAR declara_vars {
                     sprintf(mepaTemp, "AMEM %d", num_vars);
                     geraCodigo(NULL, mepaTemp);
+                    pilha_push(&num_vars_p, num_vars);
                   }
-                  | {printf("sem vars");}
+                  |
 ;
 
 // REGRA 09
@@ -165,6 +182,45 @@ var: IDENT  {
    qtTipoAtual++;
    num_vars++;
    }
+;
+
+// REGRA 11
+parte_declara_subrotinas: parte_declara_subrotinas declara_proc PONTO_E_VIRGULA
+                        | parte_declara_subrotinas declara_func PONTO_E_VIRGULA
+                        |
+;
+
+// REGRA 12
+declara_proc:
+            PROCEDURE
+            IDENT {
+              conteudoTemp.proc.tipo_retorno = indefinido_pas;
+              simboloTemp = criaSimbolo(token, procedimento, ++nivelLexico, conteudoTemp);
+              push(&t, simboloTemp);
+              printTabela(t);
+            }
+            //talvez_params_formais
+            PONTO_E_VIRGULA
+            bloco
+;
+
+// REGRA 13
+declara_func:
+            FUNCTION
+            IDENT
+            //talvez_params_formais
+            PONTO_E_VIRGULA
+            bloco
+;
+
+// REGRA 14
+talvez_params_formais: params_formais |
+;
+
+params_formais: ABRE_PARENTESES parametros FECHA_PARENTESES
+;
+
+parametros:
 ;
 
 // REGRA 16

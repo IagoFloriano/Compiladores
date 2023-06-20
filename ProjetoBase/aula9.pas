@@ -8,6 +8,6 @@ begin
         then   i := 0
         else   i := 1;
       i := i+1                    
-   end;                    
+   end                    
 end. 
 

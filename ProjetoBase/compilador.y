@@ -290,7 +290,7 @@ termo: termo vezes_div_and fator
 
       geraCodigo(NULL, $2);
     }
-    | fator
+    | fator { $$ = $1; }
 ;
 
 vezes_div_and:
@@ -313,7 +313,7 @@ fator: variavel {
       $$ = integer_pas;
     }
 //     | chamada_func
-//     | ABRE_PARENTESES expressao FECHA_PARENTESES
+    | ABRE_PARENTESES expressao FECHA_PARENTESES { $$ = $2; }
 //     | NOT fator
 ;
 

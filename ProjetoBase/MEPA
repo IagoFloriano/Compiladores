@@ -1,3 +1,13 @@
      INPP
      AMEM 4
-     PARA
+     CRCT 10
+     ARMZ 0 1
+     CRCT 3
+     ARMZ 0 0
+     CRVL 0 1
+     CRCT 2
+     MULT
+     CRVL 0 0
+     DIVI
+     ARMZ 0 0
+     CRVL 0 1

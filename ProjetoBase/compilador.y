@@ -19,6 +19,8 @@ int qtTipoAtual;
 int tipoAtual;
 int nivelLexico;
 simb simboloTemp;
+simb *simboloPtr;
+simb simbAtribuicao;
 t_conteudo conteudoTemp;
 tabela t;
 
@@ -69,13 +71,20 @@ void printTabela(tabela t){
 %token MAIOR MAIOR_IGUAL MENOR MENOR_IGUAL DIFERENTE IGUAL
 %token ABRE_COLCHETES FECHA_COLCHETES ABRE_CHAVES FECHA_CHAVES
 
-// %union{
-//    char *str;  // define o tipo str
-//    int int_val; // define o tipo int_val
+%union{
+   char *str;  // define o tipo str
+   int int_val; // define o tipo int_val
 //    simb *simbPtr;
-// }
+}
 
-// %type <int_val> tipo;
+%type <str> vezes_div_and;
+%type <str> mais_menos_or;
+%type <str> mais_menos_vazio;
+%type <str> relacao;
+%type <int_val> expressao;
+%type <int_val> expressao_simples;
+%type <int_val> fator;
+%type <int_val> termo;
 
 %%
 
@@ -126,7 +135,6 @@ declara_var : {}
 
 tipo        : IDENT {
             atribuiTipo(&t, strToType(token), qtTipoAtual);
-            printTabela(t);
             qtTipoAtual = 0;
             }
 ;
@@ -163,67 +171,162 @@ comando: NUMERO DOIS_PONTOS comando_sem_rotulo
 ;
 
 // REGRA 18
-comando_sem_rotulo:
+comando_sem_rotulo: atribuicao
+                  |
 
+;
+
+// REGRA 19
+atribuicao: IDENT { 
+            simboloPtr = busca(&t, token);
+            if (!simboloPtr) {
+              fprintf(stderr, "COMPILATION ERROR!\n Variable %s was not declared.\n"
+              , token); 
+              exit(1);
+            }
+            simbAtribuicao = *simboloPtr;
+          }
+          ATRIBUICAO expressao
+          {
+            if ($4 != simbAtribuicao.conteudo.var.tipo) {
+              fprintf(stderr, "COMPILATION ERROR!\n Atributing wrong type to variable\n");
+              exit(1);
+            }
+            sprintf(mepaTemp, "ARMZ %d %d",
+            simbAtribuicao.nivel_lexico, simbAtribuicao.conteudo.var.deslocamento);
+            geraCodigo(NULL, mepaTemp);
+          }
 ;
 
 // REGRA 24
-lista_de_expressoes: lista_de_expressoes VIRGULA {/* num_params++ */} expressao
+lista_de_expressoes: lista_de_expressoes VIRGULA {} expressao
                    | expressao
+                   |
 ;
 
 // REGRA 25
-expressao: expressao_simples
+expressao: expressao_simples { $$ = $1; }
          | expressao_simples relacao expressao_simples
             {
-               /* testa se é possível comparar as duas expressoes */
+            if ($1 != $3 ) {
+              fprintf(stderr, "COMPILATION ERROR!\n Cannot compare expressions with diferent types\n");
+              exit(1);
+            }
+            geraCodigo(NULL, $2);
+            $$ = boolean_pas;
             }
 ;
 
 // REGRA 26
-relacao: IGUAL
-         { }
-       | DIFERENTE
-         { }  
-       | MENOR
-         { }
-       | MENOR_IGUAL
-         { }
-       | MAIOR
-         { }
-       | MAIOR_IGUAL
-         { }
+relacao: IGUAL       { $$ = "CMIG"; }
+       | DIFERENTE   { $$ = "CMDG"; }
+       | MENOR       { $$ = "CMME"; }
+       | MENOR_IGUAL { $$ = "CMEG"; }
+       | MAIOR       { $$ = "CMMA"; }
+       | MAIOR_IGUAL { $$ = "CMAG"; }
 ;
 
 // REGRA 27
-expressao_simples:
+expressao_simples: expressao_simples mais_menos_or termo {
+                  if (!strcmp($2, "DISJ")){
+                    if($1 != boolean_pas || $3 != boolean_pas){
+                      fprintf(stderr, "COMPILATION ERROR!\n Operation OR must be between two booleans\n");
+                      exit(1);
+                    }
+                    $$ = boolean_pas;
+                  }
+                  else {
+                    if($1 != integer_pas || $3 != integer_pas){
+                      fprintf(stderr, "COMPILATION ERROR!\n Operation + and - must be between two integers\n");
+                      exit(1);
+                    }
+                    $$ = integer_pas;
+                  }
+                  geraCodigo(NULL, $2);
+                }
+                |
+                mais_menos_vazio termo {
+                  if (strcmp($1, "VAZIO")){
+                    if ($2 != boolean_pas) {
+                      fprintf(stderr, "COMPILATION ERROR!\n Signed variable must be integer\n");
+                      exit(1);
+                    }
+                  }
+                  $$ = $2;
+
+                  if (!strcmp($1, "MENOS"))
+                    geraCodigo(NULL, "INVR");
+                }
+;
+
+mais_menos_or:
+             MAIS  {$$ = "SOMA"; }|
+             MENOS {$$ = "SUBT"; }|
+             OR    {$$ = "DISJ"; }
+;
+
+mais_menos_vazio:
+             MAIS  { $$ = "MAIS"; }|
+             MENOS { $$ = "MENOS";}|
+                   { $$ = "VAZIO";}
 ;
 
 // REGRA 28
-termo: fator vezes_div_or fator
-         {
+termo: termo vezes_div_and fator
+    {
+      if (!strcmp($2, "CONJ")) {
+        if ($1 != boolean_pas || $3 != boolean_pas){
+          fprintf(stderr, "COMPILATION ERROR!\n Operation AND must be made between booleans\n");
+          exit(1);
+        }
+      }
+      else {
+        if ($1 != integer_pas || $3 != integer_pas){
+          fprintf(stderr, "COMPILATION ERROR!\n Operation must be made between integers\n");
+          exit(1);
+        }
+      }
+      $$ = $3;
 
-         }
-     | fator
+      geraCodigo(NULL, $2);
+    }
+    | fator { $$ = $1; }
 ;
 
-vezes_div_or: VEZES {}
-            | DIV {}
-            | OR {}
+vezes_div_and:
+              VEZES { $$ = "MULT"; }
+            | DIV { $$ = "DIVI"; }
+            | AND { $$ = "CONJ"; }
 ;
 
 // REGRA 29
-/* ta errado essa */
-fator: variavel
-     | NUMERO
-     | chamada_func
-     | ABRE_PARENTESES expressao FECHA_PARENTESES
-     | NOT fator
+// incompleta vai ter q mudar depois
+fator: variavel {
+      sprintf(mepaTemp, "CRVL %d %d",
+      simboloTemp.nivel_lexico, simboloTemp.conteudo.var.deslocamento);
+      geraCodigo(NULL, mepaTemp);
+      $$ = simboloTemp.conteudo.var.tipo;
+    }
+    | NUMERO {
+      sprintf(mepaTemp, "CRCT %s", token);
+      geraCodigo(NULL, mepaTemp);
+      $$ = integer_pas;
+    }
+//     | chamada_func
+    | ABRE_PARENTESES expressao FECHA_PARENTESES { $$ = $2; }
+//     | NOT fator
 ;
 
 // REGRA 30
-variavel: IDENT
-        | IDENT lista_de_expressoes
+variavel: IDENT {
+          simboloPtr = busca(&t, token);
+          if (!simboloPtr) {
+            fprintf(stderr, "COMPILATION ERROR\n Variable %s not declared\n", token);
+            exit(1);
+          }
+          simboloTemp = *simboloPtr;
+        }
+        //| IDENT lista_de_expressoes
 ;
 
 // REGRA 31

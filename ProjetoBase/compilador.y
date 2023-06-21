@@ -29,6 +29,8 @@ pilha rotulos;
 pilha num_vars_p;
 int proxRotulo;
 
+pilha numProcs;
+
 int strToType(const char *str){
   if (!strcmp(str, "integer")) return integer_pas;
   if (!strcmp(str, "boolean")) return boolean_pas;
@@ -104,6 +106,7 @@ programa    :{
              inicializa(&t);
              pilha_init(&rotulos);
              pilha_init(&num_vars_p);
+             pilha_pop(&numProcs);
              proxRotulo = 0;
              nivelLexico = 0;
              }
@@ -191,8 +194,8 @@ var: IDENT  {
 ;
 
 // REGRA 11
-parte_declara_subrotinas: parte_declara_subrotinas declara_proc PONTO_E_VIRGULA {nivelLexico--;}
-                        | parte_declara_subrotinas declara_func PONTO_E_VIRGULA {nivelLexico--;}
+parte_declara_subrotinas: parte_declara_subrotinas declara_proc PONTO_E_VIRGULA
+                        | parte_declara_subrotinas declara_func PONTO_E_VIRGULA
                         |
 ;
 
@@ -215,6 +218,13 @@ declara_proc:
             }
             PONTO_E_VIRGULA
             bloco
+            {
+              removeAte(&t, nivelLexico);
+              sprintf(mepaTemp, "RTPR %d %d", nivelLexico, 0 /*numero de parametros da função*/);
+              geraCodigo(NULL, mepaTemp);
+
+              printTabela(t);
+            }
 ;
 
 // REGRA 13

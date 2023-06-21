@@ -21,5 +21,7 @@ simb *busca(tabela *t, char *ident);
 
 void atribuiTipo(tabela *t, int tipo, int num);
 
+void removeAte(tabela *t, int nvLex);
+
 
 #endif // __TABELA_SIMBOLO__

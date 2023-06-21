@@ -45,3 +45,13 @@ void atribuiTipo(tabela *t, int tipo, int num){
     // funciona por conteudo ser union
   }
 }
+
+void removeAte(tabela *t, int nvLex){
+  int q = t->topo;
+  while(
+      (t->pilha[q].nivel_lexico >= nvLex && t->pilha[q].tipo_simbolo != procedimento)
+    ||(t->pilha[q].nivel_lexico > nvLex && t->pilha[q].tipo_simbolo == procedimento) ){
+    q--;
+  }
+  t->topo = q;
+}

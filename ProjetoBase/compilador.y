@@ -22,6 +22,7 @@ int tipoAtual;
 int nivelLexico;
 simb simboloTemp;
 simb *simboloPtr;
+simb *simbVarProcPtr;
 simb simbAtribuicao;
 t_conteudo conteudoTemp;
 tabela t;
@@ -204,6 +205,7 @@ declara_proc:
             PROCEDURE
             IDENT {
               conteudoTemp.proc.tipo_retorno = indefinido_pas;
+              conteudoTemp.proc.rotulo = proxRotulo;
               simboloTemp = criaSimbolo(token, procedimento, nivelLexico, conteudoTemp);
               push(&t, simboloTemp);
               printTabela(t);
@@ -220,7 +222,7 @@ declara_proc:
             bloco
             {
               removeAte(&t, nivelLexico);
-              sprintf(mepaTemp, "RTPR %d %d", nivelLexico, 0 /*numero de parametros da função*/);
+              sprintf(mepaTemp, "RTPR %02d, %02d", nivelLexico, 0 /*numero de parametros da função*/);
               geraCodigo(NULL, mepaTemp);
 
               printTabela(t);
@@ -259,25 +261,43 @@ comando: NUMERO DOIS_PONTOS comando_sem_rotulo
 ;
 
 // REGRA 18
-comando_sem_rotulo: atribuicao
+comando_sem_rotulo: atribuicao_proc_ou_func
                   | comando_repetitivo
                   | comando_condicional
                   | comando_composto
+                  |
 ;
 
-// REGRA 19
-atribuicao: IDENT { 
-            simboloPtr = busca(&t, token);
-            if (!simboloPtr) {
-              fprintf(stderr, "COMPILATION ERROR!\n Variable %s was not declared.\n"
-              , token); 
-              exit(1);
-            }
-            simbAtribuicao = *simboloPtr;
-          }
-          ATRIBUICAO expressao
+atribuicao_proc_ou_func: IDENT
+                       {
+                        simbVarProcPtr = busca(&t, token);
+                        if (!simbVarProcPtr) {
+                          fprintf(stderr, "COMPILATION ERROR!\n Variable, procedure or function %s was not declared.\n"
+                          , token); 
+                          exit(1);
+                        }
+                        printSimbolo(*simbVarProcPtr, 2);
+                       }
+                       a_continua
+                       {
+                       }
+;
+
+a_continua:
           {
-            if ($4 != simbAtribuicao.conteudo.var.tipo) {
+            simbAtribuicao = *simbVarProcPtr;
+          }
+          ATRIBUICAO atribuicao
+          | proc_sem_param
+          | proc_com_param
+;
+
+
+// REGRA 19
+atribuicao:
+          expressao
+          {
+            if ($1 != simbAtribuicao.conteudo.var.tipo) {
               fprintf(stderr, "COMPILATION ERROR!\n Atributing wrong type to variable\n");
               exit(1);
             }
@@ -285,6 +305,24 @@ atribuicao: IDENT {
             simbAtribuicao.nivel_lexico, simbAtribuicao.conteudo.var.deslocamento);
             geraCodigo(NULL, mepaTemp);
           }
+;
+
+proc_sem_param:{
+                simboloTemp = *simbVarProcPtr;
+                if(simboloTemp.tipo_simbolo != procedimento) {
+                  fprintf(stderr, "COMPILATION ERROR!\n Symbol %s is not procedure\n"
+                  ,token);
+                  exit(1);
+                }
+                sprintf(mepaTemp, "CHPR R%02d, %d", simboloTemp.conteudo.proc.rotulo, nivelLexico);
+                geraCodigo(NULL, mepaTemp);
+              }
+;
+
+proc_com_param:
+              ABRE_PARENTESES
+              lista_de_expressoes
+              FECHA_PARENTESES
 ;
 
 // REGRA 22

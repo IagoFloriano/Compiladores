@@ -122,8 +122,12 @@ bloco       :
                 geraCodigo(NULL, mepaTemp);
                 pilha_push(&rotulos, proxRotulo);
                 proxRotulo++;
+
+                nivelLexico++;
               }
               parte_declara_subrotinas {
+                nivelLexico--;
+
                 sprintf(rotrTemp, "R%02d", pilha_topo(&rotulos));
                 geraCodigo(rotrTemp, "NADA");
                 pilha_pop(&rotulos);
@@ -131,6 +135,8 @@ bloco       :
 
               comando_composto{
                 sprintf(mepaTemp, "DMEM %d", pilha_topo(&num_vars_p));
+                removeN(&t, pilha_topo(&num_vars_p));
+                pilha_pop(&num_vars_p);
                 geraCodigo(NULL, mepaTemp);
               }
               ;
@@ -143,7 +149,7 @@ parte_declara_vars: {
                     geraCodigo(NULL, mepaTemp);
                     pilha_push(&num_vars_p, num_vars);
                   }
-                  |
+                  | {pilha_push(&num_vars_p, 0);}
 ;
 
 // REGRA 09
@@ -185,8 +191,8 @@ var: IDENT  {
 ;
 
 // REGRA 11
-parte_declara_subrotinas: parte_declara_subrotinas declara_proc PONTO_E_VIRGULA
-                        | parte_declara_subrotinas declara_func PONTO_E_VIRGULA
+parte_declara_subrotinas: parte_declara_subrotinas declara_proc PONTO_E_VIRGULA {nivelLexico--;}
+                        | parte_declara_subrotinas declara_func PONTO_E_VIRGULA {nivelLexico--;}
                         |
 ;
 
@@ -195,11 +201,18 @@ declara_proc:
             PROCEDURE
             IDENT {
               conteudoTemp.proc.tipo_retorno = indefinido_pas;
-              simboloTemp = criaSimbolo(token, procedimento, ++nivelLexico, conteudoTemp);
+              simboloTemp = criaSimbolo(token, procedimento, nivelLexico, conteudoTemp);
               push(&t, simboloTemp);
               printTabela(t);
             }
             //talvez_params_formais
+            {
+              sprintf(mepaTemp, "ENPR %d", nivelLexico);
+              sprintf(rotrTemp, "R%02d", proxRotulo);
+              geraCodigo(rotrTemp, mepaTemp);
+
+              proxRotulo++;
+            }
             PONTO_E_VIRGULA
             bloco
 ;

@@ -80,6 +80,7 @@ void printTabela(tabela t){
 %token OR DIV AND NOT OF VEZES MAIS MENOS
 %token MAIOR MAIOR_IGUAL MENOR MENOR_IGUAL DIFERENTE IGUAL
 %token ABRE_COLCHETES FECHA_COLCHETES ABRE_CHAVES FECHA_CHAVES
+%token WRITE READ
 
 %union{
    char *str;  // define o tipo str
@@ -265,7 +266,38 @@ comando_sem_rotulo: atribuicao_proc_ou_func
                   | comando_repetitivo
                   | comando_condicional
                   | comando_composto
+                  | leitura
+                  | escrita
                   |
+;
+
+leitura: READ ABRE_PARENTESES itens_leitura FECHA_PARENTESES
+;
+
+itens_leitura: itens_leitura VIRGULA item_leitura | item_leitura
+;
+
+item_leitura: IDENT
+            {
+              simboloPtr = busca(&t, token);
+              if (!simboloPtr){
+                fprintf(stderr, "COMPILATION ERROR\n Cannot read to varible %s is not in scope\n",
+                token);
+                exit(1);
+              }
+              simboloTemp = *simboloPtr;
+              geraCodigo(NULL, "LEIT");
+              sprintf(mepaTemp, "ARMZ %d, %d", simboloTemp.nivel_lexico,
+                simboloTemp.conteudo.var.deslocamento);
+              geraCodigo(NULL, mepaTemp);
+            }
+;
+
+escrita: WRITE ABRE_PARENTESES itens_escrita FECHA_PARENTESES
+;
+
+itens_escrita: itens_escrita VIRGULA expressao {geraCodigo(NULL, "IMPR");}
+             | expressao {geraCodigo(NULL, "IMPR");}
 ;
 
 atribuicao_proc_ou_func: IDENT
@@ -301,7 +333,7 @@ atribuicao:
               fprintf(stderr, "COMPILATION ERROR!\n Atributing wrong type to variable\n");
               exit(1);
             }
-            sprintf(mepaTemp, "ARMZ %d %d",
+            sprintf(mepaTemp, "ARMZ %d, %d",
             simbAtribuicao.nivel_lexico, simbAtribuicao.conteudo.var.deslocamento);
             geraCodigo(NULL, mepaTemp);
           }
@@ -484,7 +516,7 @@ vezes_div_and:
 // REGRA 29
 // incompleta vai ter q mudar depois
 fator: variavel {
-      sprintf(mepaTemp, "CRVL %d %d",
+      sprintf(mepaTemp, "CRVL %d, %d",
       simboloTemp.nivel_lexico, simboloTemp.conteudo.var.deslocamento);
       geraCodigo(NULL, mepaTemp);
       $$ = simboloTemp.conteudo.var.tipo;

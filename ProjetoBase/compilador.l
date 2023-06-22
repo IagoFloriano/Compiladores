@@ -287,6 +287,18 @@ of { simbolo = simb_of;
           return MENOS;
  }
 
+write { simbolo = simb_write;
+          strncpy (token, yytext, TAM_TOKEN);
+          IMPRIME(" write ");
+          return WRITE;
+ }
+
+read {  simbolo = simb_read;
+          strncpy (token, yytext, TAM_TOKEN);
+          IMPRIME(" menos ");
+          return READ;
+ }
+
 {ident} { simbolo = simb_identificador;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" ident  ");

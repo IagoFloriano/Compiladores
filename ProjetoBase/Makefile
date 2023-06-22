@@ -21,5 +21,14 @@ compilador.tab.c: compilador.y compilador.h
 compilador.o : compilador.h compiladorF.c
 	gcc -c compiladorF.c -o compilador.o
 
+pilha.o: Pilha/pilha.c
+	make -C Pilha
+
+tabelaSimbolo.o: TabelaSimbolos/tabelaSimbolo.c
+	make -C TabelaSimbolos
+
+simbolo.o: TabelaSimbolos/simbolo.c
+	make -C TabelaSimbolos
+
 clean :
 	rm -f compilador.tab.* lex.yy.c compilador.o compilador

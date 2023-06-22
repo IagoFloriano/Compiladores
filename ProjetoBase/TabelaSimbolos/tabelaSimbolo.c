@@ -67,3 +67,7 @@ void atribuiDeslocamento(tabela *t, int quantParam){
   t->pilha[q].conteudo.proc.deslocamento = currDeslocamento;
   t->pilha[q].conteudo.proc.num_parametros = quantParam;
 }
+
+simb topo(tabela *t){
+  return t->pilha[t->topo];
+}

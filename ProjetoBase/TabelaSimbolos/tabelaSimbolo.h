@@ -25,4 +25,6 @@ void removeAte(tabela *t, int nvLex);
 
 void atribuiDeslocamento(tabela *t, int quantParam);
 
+simb topo(tabela *t);
+
 #endif // __TABELA_SIMBOLO__

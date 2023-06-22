@@ -24,6 +24,7 @@ int numParamProc;
 simb simboloTemp;
 simb *simboloPtr;
 simb *simbVarProcPtr;
+simb simbCallProc;
 simb simbAtribuicao;
 t_conteudo conteudoTemp;
 tabela t;
@@ -31,6 +32,7 @@ pilha rotulos;
 pilha num_vars_p;
 int proxRotulo;
 int tipoAtual;
+int numParamCallProc;
 
 struct parametro *paramsProcAtual;
 int parVarRef;
@@ -234,7 +236,7 @@ declara_proc:
             bloco
             {
               removeAte(&t, nivelLexico);
-              sprintf(mepaTemp, "RTPR %02d, %02d", nivelLexico, 0 /*numero de parametros da função*/);
+              sprintf(mepaTemp, "RTPR %02d, %02d", nivelLexico, topo(&t).conteudo.proc.num_parametros);
               geraCodigo(NULL, mepaTemp);
 
               printTabela(t);
@@ -303,7 +305,7 @@ lista_de_parametros:
 ;
 
 param: IDENT {
-       conteudoTemp.par.tipo_passagem = valor_par;
+       conteudoTemp.par.tipo_passagem = parVarRef;
        simboloTemp = criaSimbolo(token, variavel, nivelLexico, conteudoTemp);
        push(&t, simboloTemp);
        qtTipoAtual++;
@@ -412,14 +414,38 @@ proc_sem_param:{
                   ,token);
                   exit(1);
                 }
+                if (simboloTemp.conteudo.proc.num_parametros != 0) {
+                    fprintf(stderr, "COMPILATION ERROR!\n Procedure called incorrectly\n");
+                    exit(1);
+                }
                 sprintf(mepaTemp, "CHPR R%02d, %d", simboloTemp.conteudo.proc.rotulo, nivelLexico);
                 geraCodigo(NULL, mepaTemp);
               }
 ;
 
+// REGRA 20
 proc_com_param:
+              {
+                simbCallProc = *simbVarProcPtr;
+                if (simbCallProc.tipo_simbolo != procedimento ||
+                    simbCallProc.conteudo.proc.num_parametros == 0) {
+                    fprintf(stderr, "COMPILATION ERROR!\n Procedure called incorrectly\n");
+                    exit(1);
+                }
+              }
               ABRE_PARENTESES
+              {numParamCallProc = 0;}
               lista_de_expressoes
+              {
+                if (numParamCallProc != simbCallProc.conteudo.proc.num_parametros){
+                  fprintf(stderr, "COMPILATION ERROR!\n Procedure with wrong number of params\n");
+                  fprintf(stderr, "%d\n", numParamCallProc);
+                  exit(1);
+                }
+                sprintf(mepaTemp, "CHPR R%02d, %d", simbCallProc.conteudo.proc.rotulo,
+                nivelLexico);
+                geraCodigo(NULL, mepaTemp);
+              }
               FECHA_PARENTESES
 ;
 
@@ -484,8 +510,8 @@ comando_repetitivo: WHILE {
 ;
 
 // REGRA 24
-lista_de_expressoes: lista_de_expressoes VIRGULA {} expressao
-                   | expressao
+lista_de_expressoes: lista_de_expressoes VIRGULA expressao {numParamCallProc++;}
+                   |  expressao {numParamCallProc++;}
                    |
 ;
 

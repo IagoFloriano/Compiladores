@@ -361,6 +361,10 @@ proc_com_param:
 comando_condicional:
                   IF expressao {
                     // desvia falso pra else
+                    if ($2 != boolean_pas){
+                      fprintf(stderr, "COMPILATION ERROR\n Cannot do if with integer expression\n");
+                      exit(1);
+                    }
                     sprintf(mepaTemp, "DSVF R%02d", proxRotulo);
                     geraCodigo(NULL, mepaTemp);
                     // empilha rotulo

@@ -20,6 +20,7 @@ int num_vars;
 int qtTipoAtual;
 int tipoAtual;
 int nivelLexico;
+int numParamProc;
 simb simboloTemp;
 simb *simboloPtr;
 simb *simbVarProcPtr;
@@ -29,6 +30,10 @@ tabela t;
 pilha rotulos;
 pilha num_vars_p;
 int proxRotulo;
+int tipoAtual;
+
+struct parametro *paramsProcAtual;
+int parVarRef;
 
 pilha numProcs;
 
@@ -52,8 +57,9 @@ void printSimbolo(simb s, int tablevel){
           s.nivel_lexico, s.conteudo.var.deslocamento, tiposVar[s.conteudo.var.tipo]);
       break;
     case procedimento:
-      printf("%2d, %2d, %s\n",
-          s.nivel_lexico, s.conteudo.var.deslocamento, tiposVar[s.conteudo.var.tipo]);
+      printf("%2d, %2d, %s, %d\n",
+          s.nivel_lexico, s.conteudo.var.deslocamento, tiposVar[s.conteudo.var.tipo],
+          s.conteudo.proc.num_parametros);
       break;
     case parametro:
       printf("%2d, %2d, %s, %s\n",
@@ -164,15 +170,16 @@ declara_vars: declara_vars declara_var
 
 declara_var : {}
               lista_id_var DOIS_PONTOS
+              {}
               tipo
-              {
+              {qtTipoAtual = 0;
               }
               PONTO_E_VIRGULA
 ;
 
 tipo        : IDENT {
-            atribuiTipo(&t, strToType(token), qtTipoAtual);
-            qtTipoAtual = 0;
+            tipoAtual = strToType(token);
+            atribuiTipo(&t, tipoAtual, qtTipoAtual);
             }
 ;
 
@@ -207,17 +214,21 @@ declara_proc:
             IDENT {
               conteudoTemp.proc.tipo_retorno = indefinido_pas;
               conteudoTemp.proc.rotulo = proxRotulo;
+              conteudoTemp.proc.num_parametros = 0;
               simboloTemp = criaSimbolo(token, procedimento, nivelLexico, conteudoTemp);
               push(&t, simboloTemp);
-              printTabela(t);
+              paramsProcAtual = busca(&t, token)->conteudo.proc.lista;
+              numParamProc = 0;
             }
-            //talvez_params_formais
+            talvez_params_formais
             {
               sprintf(mepaTemp, "ENPR %d", nivelLexico);
               sprintf(rotrTemp, "R%02d", proxRotulo);
               geraCodigo(rotrTemp, mepaTemp);
+              atribuiDeslocamento(&t, numParamProc);
 
               proxRotulo++;
+              printTabela(t);
             }
             PONTO_E_VIRGULA
             bloco
@@ -246,7 +257,63 @@ talvez_params_formais: params_formais |
 params_formais: ABRE_PARENTESES parametros FECHA_PARENTESES
 ;
 
-parametros:
+parametros: secoes_parametros {
+            for(int i = numParamProc-1; i >= 0; i--){
+              printf("%d %d\n", paramsProcAtual[i].tipo, paramsProcAtual[i].tipo_passagem);
+            }
+            printf("\n\n\n");
+          }
+;
+
+secoes_parametros:
+                 secoes_parametros PONTO_E_VIRGULA{qtTipoAtual =0;}
+                 lista_de_parametros DOIS_PONTOS tipo{
+                   printf("for(int i = %d - %d;\n", numParamProc, qtTipoAtual);
+                   printf("    i < %d;\n", numParamProc);
+                   printf("    i++){\n");
+                   for(int i = numParamProc - qtTipoAtual;
+                       i < numParamProc;
+                       i++){
+                       paramsProcAtual[i].tipo = tipoAtual;
+                       printf("Tipo atual = %d, tipo salvo = %d\n",
+                       tipoAtual, paramsProcAtual[i].tipo);
+                   }
+                 }
+                 |{qtTipoAtual =0;}
+                 lista_de_parametros DOIS_PONTOS tipo{
+                   printf("for(int i = %d - %d;\n", numParamProc, qtTipoAtual);
+                   printf("    i < %d;\n", numParamProc);
+                   printf("    i++){\n");
+                   for(int i = numParamProc - qtTipoAtual;
+                       i < numParamProc;
+                       i++){
+                       paramsProcAtual[i].tipo = tipoAtual;
+                       printf("Tipo atual = %d, tipo salvo = %d\n",
+                       tipoAtual, paramsProcAtual[i].tipo);
+                   }
+                   printf("FOI ULTIMO TIPO\n");
+                 }
+;
+
+lista_de_parametros:
+                   lista_de_parametros VIRGULA talvez_var param {
+                   }
+                   | talvez_var param {
+                   }
+;
+
+param: IDENT {
+       conteudoTemp.par.tipo_passagem = valor_par;
+       simboloTemp = criaSimbolo(token, variavel, nivelLexico, conteudoTemp);
+       push(&t, simboloTemp);
+       qtTipoAtual++;
+       paramsProcAtual[numParamProc].tipo_passagem = parVarRef;
+       numParamProc++;
+     }
+;
+
+talvez_var: VAR {parVarRef = referencia_par;}
+          | {parVarRef = valor_par;}
 ;
 
 // REGRA 16
@@ -308,7 +375,6 @@ atribuicao_proc_ou_func: IDENT
                           , token); 
                           exit(1);
                         }
-                        printSimbolo(*simbVarProcPtr, 2);
                        }
                        a_continua
                        {
@@ -544,6 +610,7 @@ variavel: IDENT {
             exit(1);
           }
           simboloTemp = *simboloPtr;
+          printSimbolo(simboloTemp, 0);
         }
         //| IDENT lista_de_expressoes
 ;

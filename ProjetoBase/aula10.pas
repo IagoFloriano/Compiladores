@@ -1,6 +1,6 @@
 program proc1 (input, output); 
   var x, y: integer;      
-  procedure p;             
+  procedure p (p1, p2, p3:integer; p4:boolean);             
      var z:integer;              
      begin                   
        z:=x;                   
@@ -12,6 +12,6 @@ program proc1 (input, output);
      end;
 begin                     
    read(x);            
-   p;  
+   p();  
    write (x,y)             
 end.

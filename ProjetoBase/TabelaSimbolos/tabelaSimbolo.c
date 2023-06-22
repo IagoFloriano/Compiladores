@@ -55,3 +55,15 @@ void removeAte(tabela *t, int nvLex){
   }
   t->topo = q;
 }
+
+void atribuiDeslocamento(tabela *t, int quantParam){
+  int q = t->topo;
+  int currDeslocamento = -4;
+  while ( t->pilha[q].tipo_simbolo != procedimento ){
+    t->pilha[q].conteudo.par.deslocamento = currDeslocamento;
+    currDeslocamento--;
+    q--;
+  }
+  t->pilha[q].conteudo.proc.deslocamento = currDeslocamento;
+  t->pilha[q].conteudo.proc.num_parametros = quantParam;
+}

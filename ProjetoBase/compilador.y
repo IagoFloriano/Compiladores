@@ -24,6 +24,7 @@ int numParamProc;
 simb simboloTemp;
 simb *simboloPtr;
 simb *simbVarProcPtr;
+simb *simbFunDeclara;
 simb simbCallProc;
 simb simbAtribuicao;
 t_conteudo conteudoTemp;
@@ -246,10 +247,35 @@ declara_proc:
 // REGRA 13
 declara_func:
             FUNCTION
-            IDENT
-            //talvez_params_formais
+            IDENT {
+              conteudoTemp.proc.tipo_retorno = indefinido_pas;
+              conteudoTemp.proc.rotulo = proxRotulo;
+              conteudoTemp.proc.num_parametros = 0;
+              simboloTemp = criaSimbolo(token, procedimento, nivelLexico, conteudoTemp);
+              push(&t, simboloTemp);
+              paramsProcAtual = busca(&t, token)->conteudo.proc.lista;
+              simbFunDeclara = busca(&t, token);
+              numParamProc = 0;
+            }
+            talvez_params_formais
+            {
+              sprintf(mepaTemp, "ENPR %d", nivelLexico);
+              sprintf(rotrTemp, "R%02d", proxRotulo);
+              geraCodigo(rotrTemp, mepaTemp);
+              atribuiDeslocamento(&t, numParamProc);
+
+              proxRotulo++;
+              printTabela(t);
+            }
             PONTO_E_VIRGULA
             bloco
+            {
+              removeAte(&t, nivelLexico);
+              sprintf(mepaTemp, "RTPR %02d, %02d", nivelLexico, topo(&t).conteudo.proc.num_parametros);
+              geraCodigo(NULL, mepaTemp);
+
+              printTabela(t);
+            }
 ;
 
 // REGRA 14

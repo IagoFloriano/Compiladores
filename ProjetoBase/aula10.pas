@@ -1,6 +1,6 @@
 program proc1 (input, output); 
   var x, y: integer;      
-  procedure p (p1, p2, p3:integer; p4:boolean);             
+  function p:integer;             
      var z:integer;              
      begin                   
        z:=x;                   
@@ -8,10 +8,18 @@ program proc1 (input, output);
        if (z>1)                   
          then p 
          else y:=1; 
-       y:=y*z      
+       y:=y*z ;     
+       p := 1
      end;
+
+   procedure p2(a:integer);
+   var a2:integer;
+   begin
+     a2 := a;
+     a := a * a2
+   end;
 begin                     
    read(x);            
-   p();  
-   write (x,y)             
+   p2(p);
+   write (x,p)             
 end.

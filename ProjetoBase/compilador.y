@@ -24,7 +24,7 @@ int numParamProc;
 simb simboloTemp;
 simb *simboloPtr;
 simb *simbVarProcPtr;
-simb *simbFunDeclara;
+simb *simbFuncDeclara;
 simb simbCallProc;
 simb simbAtribuicao;
 t_conteudo conteudoTemp;
@@ -254,7 +254,7 @@ declara_func:
               simboloTemp = criaSimbolo(token, procedimento, nivelLexico, conteudoTemp);
               push(&t, simboloTemp);
               paramsProcAtual = busca(&t, token)->conteudo.proc.lista;
-              simbFunDeclara = busca(&t, token);
+              simbFuncDeclara = busca(&t, token);
               numParamProc = 0;
             }
             talvez_params_formais
@@ -267,6 +267,12 @@ declara_func:
               proxRotulo++;
               printTabela(t);
             }
+            DOIS_PONTOS
+            tipo
+            {
+              simbFuncDeclara->conteudo.proc.tipo_retorno = tipoAtual;
+              printTabela(t);
+            }
             PONTO_E_VIRGULA
             bloco
             {
@@ -274,7 +280,6 @@ declara_func:
               sprintf(mepaTemp, "RTPR %02d, %02d", nivelLexico, topo(&t).conteudo.proc.num_parametros);
               geraCodigo(NULL, mepaTemp);
 
-              printTabela(t);
             }
 ;
 
@@ -444,6 +449,9 @@ proc_sem_param:{
                     fprintf(stderr, "COMPILATION ERROR!\n Procedure called incorrectly\n");
                     exit(1);
                 }
+                if (simboloTemp.conteudo.proc.tipo_retorno != indefinido_pas){
+                    geraCodigo(NULL, "AMEM 1");
+                }
                 sprintf(mepaTemp, "CHPR R%02d, %d", simboloTemp.conteudo.proc.rotulo, nivelLexico);
                 geraCodigo(NULL, mepaTemp);
               }
@@ -457,6 +465,9 @@ proc_com_param:
                     simbCallProc.conteudo.proc.num_parametros == 0) {
                     fprintf(stderr, "COMPILATION ERROR!\n Procedure called incorrectly\n");
                     exit(1);
+                }
+                if (simbCallProc.conteudo.proc.tipo_retorno){
+                    geraCodigo(NULL, "AMEM 1");
                 }
               }
               ABRE_PARENTESES
@@ -637,10 +648,15 @@ vezes_div_and:
 ;
 
 // REGRA 29
-// incompleta vai ter q mudar depois
-fator: variavel {
-      sprintf(mepaTemp, "CRVL %d, %d",
-      simboloTemp.nivel_lexico, simboloTemp.conteudo.var.deslocamento);
+fator: variavel_ou_func {
+      if (simboloTemp.tipo_simbolo == variavel){
+        sprintf(mepaTemp, "CRVL %d, %d",
+          simboloTemp.nivel_lexico, simboloTemp.conteudo.var.deslocamento);
+      } else if (simboloTemp.tipo_simbolo == procedimento){
+        sprintf(mepaTemp, "AMEM 1");
+        geraCodigo(NULL, mepaTemp);
+        sprintf(mepaTemp, "CHPR R%02d, %02d", simboloTemp.conteudo.proc.rotulo, nivelLexico);
+      }
       geraCodigo(NULL, mepaTemp);
       $$ = simboloTemp.conteudo.var.tipo;
     }
@@ -649,26 +665,30 @@ fator: variavel {
       geraCodigo(NULL, mepaTemp);
       $$ = integer_pas;
     }
-//     | chamada_func
     | ABRE_PARENTESES expressao FECHA_PARENTESES { $$ = $2; }
-//     | NOT fator
 ;
 
 // REGRA 30
-variavel: IDENT {
+variavel_ou_func: IDENT {
           simboloPtr = busca(&t, token);
           if (!simboloPtr) {
             fprintf(stderr, "COMPILATION ERROR\n Variable %s not declared\n", token);
             exit(1);
           }
           simboloTemp = *simboloPtr;
-          printSimbolo(simboloTemp, 0);
         }
-        //| IDENT lista_de_expressoes
+        talvez_params_func
 ;
 
-// REGRA 31
-chamada_func:
+talvez_params_func: ABRE_PARENTESES
+                  {numParamCallProc = 0;}
+                  lista_params_reais
+                  FECHA_PARENTESES
+                  |
+;
+
+lista_params_reais: lista_params_reais VIRGULA expressao {numParamProc++;}
+                  | expressao {numParamProc++;}
 ;
 
 %%

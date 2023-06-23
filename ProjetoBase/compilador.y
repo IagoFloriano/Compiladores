@@ -263,7 +263,7 @@ declara_proc:
             bloco
             {
               removeAte(&t, nivelLexico);
-              sprintf(mepaTemp, "RTPR %02d, %02d", nivelLexico, topo(&t).conteudo.proc.num_parametros);
+              sprintf(mepaTemp, "RTPR %d, %d", nivelLexico, topo(&t).conteudo.proc.num_parametros);
               geraCodigo(NULL, mepaTemp);
 
               printTabela(t);
@@ -305,7 +305,7 @@ declara_func:
             bloco
             {
               removeAte(&t, nivelLexico);
-              sprintf(mepaTemp, "RTPR %02d, %02d", nivelLexico, topo(&t).conteudo.proc.num_parametros);
+              sprintf(mepaTemp, "RTPR %d, %d", nivelLexico, topo(&t).conteudo.proc.num_parametros);
               geraCodigo(NULL, mepaTemp);
 
             }
@@ -549,7 +549,7 @@ desvio: GOTO NUMERO {
         exit(1);
       }
       simboloTemp = *simboloPtr;
-      sprintf(mepaTemp, "DSVR %s, %02d, %02d", simboloTemp.identificador,
+      sprintf(mepaTemp, "DSVR %s, %02d, %d", simboloTemp.identificador,
         simboloTemp.nivel_lexico, nivelLexico);
       geraCodigo(NULL, mepaTemp);
       }
@@ -563,7 +563,7 @@ comando_condicional:
                       fprintf(stderr, "COMPILATION ERROR\n Cannot do if with integer expression\n");
                       exit(1);
                     }
-                    sprintf(mepaTemp, "DSVF R%02d", proxRotulo);
+                    sprintf(mepaTemp, "DSVF R%02d", proxRotulo+1);
                     geraCodigo(NULL, mepaTemp);
                     // empilha rotulo
                     pilha_push(&rotulos, proxRotulo);
@@ -571,16 +571,16 @@ comando_condicional:
                   }
                   THEN comando_sem_rotulo {
                     // desvia sempre fim else
-                    sprintf(mepaTemp, "DSVS R%02d", pilha_topo(&rotulos)+1);
+                    sprintf(mepaTemp, "DSVS R%02d", pilha_topo(&rotulos));
                     geraCodigo(NULL, mepaTemp);
 
                     // rotulo else
-                    sprintf(rotrTemp, "R%02d", pilha_topo(&rotulos));
+                    sprintf(rotrTemp, "R%02d", pilha_topo(&rotulos)+1);
                     geraCodigo(rotrTemp, "NADA");
                   }
                   talvez_else {
                     // rotulo fim else
-                    sprintf(rotrTemp, "R%02d", pilha_topo(&rotulos)+1);
+                    sprintf(rotrTemp, "R%02d", pilha_topo(&rotulos));
                     geraCodigo(rotrTemp, "NADA");
 
                     pilha_pop(&rotulos);
@@ -750,7 +750,7 @@ fator: variavel_ou_func {
         else if (simboloTemp.tipo_simbolo == procedimento){
           sprintf(mepaTemp, "AMEM 1");
           geraCodigo(NULL, mepaTemp);
-          sprintf(mepaTemp, "CHPR R%02d, %02d", simboloTemp.conteudo.proc.rotulo, nivelLexico);
+          sprintf(mepaTemp, "CHPR R%02d, %d", simboloTemp.conteudo.proc.rotulo, nivelLexico);
           geraCodigo(NULL, mepaTemp);
         }
         else if (simboloTemp.tipo_simbolo == parametro){
@@ -819,7 +819,7 @@ talvez_params_func: ABRE_PARENTESES
                   {
                   printf("FECHA PARAMETROS FUNCAO\n");
                   chamandoProc = 0;
-                  sprintf(mepaTemp, "CHPR R%02d, %02d", simbCallProc.conteudo.proc.rotulo, nivelLexico);
+                  sprintf(mepaTemp, "CHPR R%02d, %d", simbCallProc.conteudo.proc.rotulo, nivelLexico);
                   geraCodigo(NULL, mepaTemp);
                   ignoraVariavelFunc = 1;
                   }

@@ -4,9 +4,9 @@
 #include "tabelaSimbolo.h"
 
 void inicializa(tabela *t){
-  t->tam = 1;
+  t->tam = 1000;
   t->topo = -1;
-  t->pilha = malloc(sizeof(simb) * 1);
+  t->pilha = malloc(sizeof(simb) * 1000);
 }
 
 void push(tabela *t, simb s){
@@ -70,4 +70,11 @@ void atribuiDeslocamento(tabela *t, int quantParam){
 
 simb topo(tabela *t){
   return t->pilha[t->topo];
+}
+
+simb *procTopo(tabela *t){
+  int q = t->topo;
+  while (t->pilha[q].tipo_simbolo != procedimento && q >= 0) q--;
+  if (q < 0) return NULL;
+  return &(t->pilha[q]);
 }

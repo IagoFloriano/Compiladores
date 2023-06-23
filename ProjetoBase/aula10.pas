@@ -12,7 +12,7 @@ program proc1 (input, output);
        p := 1
      end;
 
-   procedure p2(a:integer);
+   procedure p2(var a:integer);
    var a2:integer;
    begin
      a2 := a;

@@ -20,6 +20,7 @@ int num_vars;
 int qtTipoAtual;
 int tipoAtual;
 int nivelLexico;
+int chamandoProc;
 int numParamProc;
 simb simboloTemp;
 simb *simboloPtr;
@@ -221,6 +222,7 @@ declara_proc:
               simboloTemp = criaSimbolo(token, procedimento, nivelLexico, conteudoTemp);
               push(&t, simboloTemp);
               paramsProcAtual = busca(&t, token)->conteudo.proc.lista;
+              simbFuncDeclara = busca(&t, token);
               numParamProc = 0;
             }
             talvez_params_formais
@@ -231,7 +233,6 @@ declara_proc:
               atribuiDeslocamento(&t, numParamProc);
 
               proxRotulo++;
-              printTabela(t);
             }
             PONTO_E_VIRGULA
             bloco
@@ -252,6 +253,7 @@ declara_func:
               conteudoTemp.proc.rotulo = proxRotulo;
               conteudoTemp.proc.num_parametros = 0;
               simboloTemp = criaSimbolo(token, procedimento, nivelLexico, conteudoTemp);
+              printSimbolo(simboloTemp, 0);
               push(&t, simboloTemp);
               paramsProcAtual = busca(&t, token)->conteudo.proc.lista;
               simbFuncDeclara = busca(&t, token);
@@ -270,6 +272,7 @@ declara_func:
             DOIS_PONTOS
             tipo
             {
+              simbFuncDeclara = busca(&t, simbFuncDeclara->identificador);
               simbFuncDeclara->conteudo.proc.tipo_retorno = tipoAtual;
               printTabela(t);
             }
@@ -291,8 +294,17 @@ params_formais: ABRE_PARENTESES parametros FECHA_PARENTESES
 ;
 
 parametros: secoes_parametros {
+            printf("\n\n\n");
+            simbFuncDeclara = busca(&t, simbFuncDeclara->identificador);
             for(int i = numParamProc-1; i >= 0; i--){
               printf("%d %d\n", paramsProcAtual[i].tipo, paramsProcAtual[i].tipo_passagem);
+            }
+            memcpy(simbFuncDeclara->conteudo.proc.lista, paramsProcAtual, numParamProc*sizeof(struct parametro));
+            printTabela(t);
+            for(int i = numParamProc-1; i >= 0; i--){
+              printf("%d %d\n",
+                simbFuncDeclara->conteudo.proc.lista[i].tipo,
+                simbFuncDeclara->conteudo.proc.lista[i].tipo_passagem);
             }
             printf("\n\n\n");
           }
@@ -301,9 +313,6 @@ parametros: secoes_parametros {
 secoes_parametros:
                  secoes_parametros PONTO_E_VIRGULA{qtTipoAtual =0;}
                  lista_de_parametros DOIS_PONTOS tipo{
-                   printf("for(int i = %d - %d;\n", numParamProc, qtTipoAtual);
-                   printf("    i < %d;\n", numParamProc);
-                   printf("    i++){\n");
                    for(int i = numParamProc - qtTipoAtual;
                        i < numParamProc;
                        i++){
@@ -314,9 +323,6 @@ secoes_parametros:
                  }
                  |{qtTipoAtual =0;}
                  lista_de_parametros DOIS_PONTOS tipo{
-                   printf("for(int i = %d - %d;\n", numParamProc, qtTipoAtual);
-                   printf("    i < %d;\n", numParamProc);
-                   printf("    i++){\n");
                    for(int i = numParamProc - qtTipoAtual;
                        i < numParamProc;
                        i++){
@@ -337,7 +343,7 @@ lista_de_parametros:
 
 param: IDENT {
        conteudoTemp.par.tipo_passagem = parVarRef;
-       simboloTemp = criaSimbolo(token, variavel, nivelLexico, conteudoTemp);
+       simboloTemp = criaSimbolo(token, parametro, nivelLexico, conteudoTemp);
        push(&t, simboloTemp);
        qtTipoAtual++;
        paramsProcAtual[numParamProc].tipo_passagem = parVarRef;
@@ -432,9 +438,27 @@ atribuicao:
               fprintf(stderr, "COMPILATION ERROR!\n Atributing wrong type to variable\n");
               exit(1);
             }
-            sprintf(mepaTemp, "ARMZ %d, %d",
-            simbAtribuicao.nivel_lexico, simbAtribuicao.conteudo.var.deslocamento);
-            geraCodigo(NULL, mepaTemp);
+            // armazena em variavel e função
+            if (simbAtribuicao.tipo_simbolo == variavel ||
+              simbAtribuicao.tipo_simbolo == procedimento){
+              sprintf(mepaTemp, "ARMZ %d, %d",
+              simbAtribuicao.nivel_lexico, simbAtribuicao.conteudo.var.deslocamento);
+              geraCodigo(NULL, mepaTemp);
+            }
+            else if (simbAtribuicao.tipo_simbolo == parametro){
+              //salvar por valor
+              if (simbAtribuicao.conteudo.par.tipo_passagem == valor_par){
+                sprintf(mepaTemp, "ARMZ %d, %d",
+                simbAtribuicao.nivel_lexico, simbAtribuicao.conteudo.var.deslocamento);
+                geraCodigo(NULL, mepaTemp);
+              }
+              //salvar por referencia
+              else {
+                sprintf(mepaTemp, "ARMI %d, %d",
+                simbAtribuicao.nivel_lexico, simbAtribuicao.conteudo.var.deslocamento);
+                geraCodigo(NULL, mepaTemp);
+              }
+            }
           }
 ;
 
@@ -469,6 +493,7 @@ proc_com_param:
                 if (simbCallProc.conteudo.proc.tipo_retorno){
                     geraCodigo(NULL, "AMEM 1");
                 }
+                chamandoProc = 1;
               }
               ABRE_PARENTESES
               {numParamCallProc = 0;}
@@ -482,6 +507,7 @@ proc_com_param:
                 sprintf(mepaTemp, "CHPR R%02d, %d", simbCallProc.conteudo.proc.rotulo,
                 nivelLexico);
                 geraCodigo(NULL, mepaTemp);
+                chamandoProc = 0;
               }
               FECHA_PARENTESES
 ;
@@ -649,15 +675,62 @@ vezes_div_and:
 
 // REGRA 29
 fator: variavel_ou_func {
+      int passarPara = valor_par;
+      if (chamandoProc){
+        passarPara = simbCallProc.conteudo.proc.lista[numParamCallProc-1].tipo_passagem;
+        printSimbolo(simbCallProc, 3);
+      }
+      printSimbolo(simboloTemp, 0);
+
       if (simboloTemp.tipo_simbolo == variavel){
-        sprintf(mepaTemp, "CRVL %d, %d",
-          simboloTemp.nivel_lexico, simboloTemp.conteudo.var.deslocamento);
-      } else if (simboloTemp.tipo_simbolo == procedimento){
+        // passar pra um q pede por valor ou carregar normal
+        if (passarPara){
+          sprintf(mepaTemp, "CRVL %d, %d",
+            simboloTemp.nivel_lexico, simboloTemp.conteudo.var.deslocamento);
+          geraCodigo(NULL, mepaTemp);
+        }
+        // passar pra um q pede por referencia
+        else {
+          sprintf(mepaTemp, "CREN %d, %d",
+            simboloTemp.nivel_lexico, simboloTemp.conteudo.var.deslocamento);
+          geraCodigo(NULL, mepaTemp);
+        }
+      }
+      else if (simboloTemp.tipo_simbolo == procedimento){
         sprintf(mepaTemp, "AMEM 1");
         geraCodigo(NULL, mepaTemp);
         sprintf(mepaTemp, "CHPR R%02d, %02d", simboloTemp.conteudo.proc.rotulo, nivelLexico);
+        geraCodigo(NULL, mepaTemp);
       }
-      geraCodigo(NULL, mepaTemp);
+      else if (simboloTemp.tipo_simbolo == parametro){
+        //se foi passado por valor
+        if (simboloTemp.conteudo.par.tipo_passagem == valor_par){
+          printf("PASSANDO TOKEN %s\n%d\n\n",simboloTemp.identificador,passarPara);
+          if(passarPara){
+            sprintf(mepaTemp, "CRVL %d, %d",
+              simboloTemp.nivel_lexico, simboloTemp.conteudo.var.deslocamento);
+            geraCodigo(NULL, mepaTemp);
+          }
+          else{
+            sprintf(mepaTemp, "CREN %d, %d",
+              simboloTemp.nivel_lexico, simboloTemp.conteudo.var.deslocamento);
+            geraCodigo(NULL, mepaTemp);
+          }
+        }
+        //se foi passado por referencia
+        else {
+          if(passarPara){
+            sprintf(mepaTemp, "CRVI %d, %d",
+              simboloTemp.nivel_lexico, simboloTemp.conteudo.var.deslocamento);
+            geraCodigo(NULL, mepaTemp);
+          }
+          else{
+            sprintf(mepaTemp, "CRVL %d, %d",
+              simboloTemp.nivel_lexico, simboloTemp.conteudo.var.deslocamento);
+            geraCodigo(NULL, mepaTemp);
+          }
+        }
+      }
       $$ = simboloTemp.conteudo.var.tipo;
     }
     | NUMERO {
@@ -681,14 +754,24 @@ variavel_ou_func: IDENT {
 ;
 
 talvez_params_func: ABRE_PARENTESES
-                  {numParamCallProc = 0;}
+                  {
+                   geraCodigo(NULL, "AMEM 1");
+                   numParamCallProc = 0;
+                   chamandoProc = 1;
+                   simbCallProc = simboloTemp;
+                  }
                   lista_params_reais
                   FECHA_PARENTESES
+                  {
+                  chamandoProc = 0;
+                  sprintf(mepaTemp, "CHPR R%02d, %02d", nivelLexico);
+                  geraCodigo(NULL, mepaTemp);
+                  }
                   |
 ;
 
-lista_params_reais: lista_params_reais VIRGULA expressao {numParamProc++;}
-                  | expressao {numParamProc++;}
+lista_params_reais: lista_params_reais VIRGULA expressao {numParamCallProc++;}
+                  | expressao {numParamCallProc++;}
 ;
 
 %%

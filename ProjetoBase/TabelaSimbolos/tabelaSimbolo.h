@@ -27,4 +27,6 @@ void atribuiDeslocamento(tabela *t, int quantParam);
 
 simb topo(tabela *t);
 
+simb *procTopo(tabela *t);
+
 #endif // __TABELA_SIMBOLO__

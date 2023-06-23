@@ -10,7 +10,8 @@
 enum tipos_simbolo {
   procedimento,
   variavel,
-  parametro
+  parametro,
+  label
 };
 
 /* identificadores especificos para variaveis */

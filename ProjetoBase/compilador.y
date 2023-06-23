@@ -50,7 +50,7 @@ int strToType(const char *str){
 
 void printSimbolo(simb s, int tablevel){
   for(int i = 0; i < tablevel; i++){printf("\t");}
-  char *tipos[] = {"PROC", "VAR", "PARAM"};
+  char *tipos[] = {"PROC", "VAR", "PARAM", "LABEL"};
   //    ident  tipo  infos
   printf("%s\t%s\t",s.identificador,
       tipos[s.tipo_simbolo]);
@@ -70,6 +70,9 @@ void printSimbolo(simb s, int tablevel){
       printf("%2d, %2d, %s, %s\n",
           s.nivel_lexico, s.conteudo.par.deslocamento, tiposVar[s.conteudo.par.tipo],
           s.conteudo.par.tipo_passagem ? "vlr" : "ref");
+      break;
+    case label:
+      printf("\n");
       break;
     default:
       printf("ERRO\n");
@@ -133,6 +136,10 @@ programa    :{
 
 // REGRA 02
 bloco       :
+              parte_declara_labels
+              {
+                printTabela(t);
+              }
               parte_declara_vars {
                 sprintf(mepaTemp, "DSVS R%02d", proxRotulo);
                 geraCodigo(NULL, mepaTemp);
@@ -155,7 +162,24 @@ bloco       :
                 pilha_pop(&num_vars_p);
                 geraCodigo(NULL, mepaTemp);
               }
-              ;
+;
+
+// REGRA 03
+parte_declara_labels: LABEL
+                    declara_labels PONTO_E_VIRGULA
+                    |
+;
+
+declara_labels: declara_labels VIRGULA label
+              | label
+;
+
+label: NUMERO {
+     simboloTemp = criaSimbolo(token, label, nivelLexico, conteudoTemp);
+     push(&t, simboloTemp);
+     printTabela(t);
+     }
+;
 
 // REGRA 08
 parte_declara_vars: {
@@ -364,7 +388,10 @@ comandos: comandos PONTO_E_VIRGULA comando
 ;
 
 // REGRA 17
-comando: NUMERO DOIS_PONTOS comando_sem_rotulo
+comando: NUMERO {
+        sprintf(mepaTemp, "ENRT %d, %d", nivelLexico, pilha_topo(&num_vars_p));
+        geraCodigo(token, mepaTemp);
+       }DOIS_PONTOS comando_sem_rotulo
        | comando_sem_rotulo
 ;
 
@@ -375,6 +402,7 @@ comando_sem_rotulo: atribuicao_proc_ou_func
                   | comando_composto
                   | leitura
                   | escrita
+                  | desvio
                   |
 ;
 
@@ -513,6 +541,20 @@ proc_com_param:
               FECHA_PARENTESES
 ;
 
+// REGRA 21
+desvio: GOTO NUMERO {
+      simboloPtr = busca(&t, token);
+      if (!simboloPtr) {
+        fprintf(stderr, "COMPILATION ERROR\n Label %s was not declared\n", token);
+        exit(1);
+      }
+      simboloTemp = *simboloPtr;
+      sprintf(mepaTemp, "DSVR %s, %02d, %02d", simboloTemp.identificador,
+        simboloTemp.nivel_lexico, nivelLexico);
+      geraCodigo(NULL, mepaTemp);
+      }
+;
+
 // REGRA 22
 comando_condicional:
                   IF expressao {
@@ -621,8 +663,9 @@ expressao_simples: expressao_simples mais_menos_or termo {
                 }
                 |
                 mais_menos_vazio termo {
+                  printf("%s\n", $1);
                   if (strcmp($1, "VAZIO")){
-                    if ($2 != boolean_pas) {
+                    if ($2 == boolean_pas) {
                       fprintf(stderr, "COMPILATION ERROR!\n Signed variable must be integer\n");
                       exit(1);
                     }
@@ -745,6 +788,7 @@ fator: variavel_ou_func {
     | NUMERO {
       sprintf(mepaTemp, "CRCT %s", token);
       geraCodigo(NULL, mepaTemp);
+      printf("FATOR NO NUMERO\n");
       $$ = integer_pas;
     }
     | ABRE_PARENTESES expressao FECHA_PARENTESES { $$ = $2; }

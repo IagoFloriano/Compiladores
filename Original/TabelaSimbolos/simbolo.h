@@ -43,6 +43,7 @@ struct procedimento {
   int deslocamento;   // so usar caso seja função
   int rotulo;
   struct parametro lista[64];
+  int num_parametros;
 };
 
 /* typedef do simbolo em si */

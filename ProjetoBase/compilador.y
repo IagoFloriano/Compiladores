@@ -574,8 +574,8 @@ comando_repetitivo: WHILE {
 ;
 
 // REGRA 24
-lista_de_expressoes: lista_de_expressoes VIRGULA expressao {numParamCallProc++;}
-                   |  expressao {numParamCallProc++;}
+lista_de_expressoes: lista_de_expressoes VIRGULA {numParamCallProc++;}expressao 
+                   |  {numParamCallProc++;}expressao 
                    |
 ;
 
@@ -782,9 +782,9 @@ talvez_params_func: ABRE_PARENTESES
                   | {printf("NAO TEM PARAMETROS DE FUNC\n");}
 ;
 
-lista_params_reais: lista_params_reais VIRGULA {numParamCallProc++;}expressao_simples
+lista_params_reais: lista_params_reais VIRGULA {printf("COMEÇO EXPRESSAO SIMPLES\n"); numParamCallProc++;}expressao_simples
                   {printf("FIM DE EXPRESSÃO SIMPLES\n");}
-                  | {numParamCallProc++;}expressao_simples
+                  | {printf("COMEÇO EXPRESSAO SIMPLES\n"); numParamCallProc++;}expressao_simples
                   {printf("FIM DE EXPRESSÃO SIMPLES\n");}
 ;
 
